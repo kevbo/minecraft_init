@@ -1,0 +1,65 @@
+#!/bin/bash
+#
+#	/etc/rc.d/init.d/minecraft
+#
+#	Init script for the Minecraft server running under Spigot
+#	Shutdown is managed by communicating with the process and calling
+# a graceful stop.
+#
+#   chkconfig: 345 70 30
+#   description: Minecraft Server via Spigot
+
+# Source function library.
+. /etc/init.d/functions
+
+# Variables
+prog=minecraft
+MINECRAFT_HOME=/var/minecraft
+MINECRAFT_USER=minecraft
+MINECRAFT_GROUP=minecraft
+MINECRAFT_ENVIRONMENT_FILE=/var/minecraft/unit.conf
+MINECRAFT_WORKING_DIR=/var/minecraft/server
+MINECRAFT_PORT=25565
+MINECRAFT_RCON_PORT=25575
+MINECRAFT_RCON_PASSWORD=<password_here>
+MINECRAFT_START="cd $MINECRAFT_WORKING_DIR && /usr/bin/java -Xmx1024M -Xms1024M -jar spigot.jar --noconsole"
+MINECRAFT_STOP="/var/minecraft/mcrcon -H localhost -P $MINECRAFT_RCON_PORT -p $MINECRAFT_RCON_PASSWORD stop"
+RETVAL=0
+LOCKFILE=/var/lock/subsys/$prog
+
+
+start() {
+	echo -n "Starting $prog: "
+	daemon --user $MINECRAFT_USER $MINECRAFT_START &
+	RETVAL=$?
+	[ $RETVAL -eq 0 ] && touch $LOCKFILE
+	echo
+	return $RETVAL
+}	
+
+stop() {
+	echo -n "Shutting down $prog: "
+	$MINECRAFT_STOP && success || failure
+	RETVAL=$?
+    [ $RETVAL -eq 0 ] && rm -f $LOCKFILE
+    echo
+    return $RETVAL
+}
+
+case "$1" in
+    start)
+	    start
+	    ;;
+    stop)
+	    stop
+	    ;;
+    restart)
+    	stop
+	    start
+	    ;;
+    *)
+	    echo "Usage: <minecraft> {start|stop}"
+	    exit 1
+	    ;;
+esac
+exit $?
