@@ -41,9 +41,9 @@ stop() {
 	echo -n "Shutting down $prog: "
 	$MINECRAFT_STOP && success || failure
 	RETVAL=$?
-    [ $RETVAL -eq 0 ] && rm -f $LOCKFILE
-    echo
-    return $RETVAL
+    	[ $RETVAL -eq 0 ] && rm -f $LOCKFILE
+    	echo
+    	return $RETVAL
 }
 
 case "$1" in
